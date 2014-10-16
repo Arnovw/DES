@@ -110,7 +110,7 @@ public class DesEncryption {
 
         try {
             final File inputFile = new File(filePath);
-            final File outputFile = new File(filePath.replace(".des","decr.txt"));
+            final File outputFile = new File(filePath.replace(".des",""));
             final InputStream inputStream = new BufferedInputStream(new FileInputStream(inputFile));
             final OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
 
@@ -217,7 +217,7 @@ public class DesEncryption {
 
         try {
             final File inputFile = new File(filePath);
-            final File outputFile = new File(filePath.replace(".des2","decr.txt"));
+            final File outputFile = new File(filePath.replace(".des2",""));
             final InputStream inputStream = new BufferedInputStream(new FileInputStream(inputFile));
             final OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
 
