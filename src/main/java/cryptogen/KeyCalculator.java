@@ -3,6 +3,7 @@ package cryptogen;
 import helpers.ByteHelper;
 
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
 import java.util.Arrays;
 
 /**
@@ -39,8 +40,22 @@ public class KeyCalculator {
 
 
     public static byte[][] generate(String key) {
-        // eerste 64 bits van string worden omgezet in bytes
-        byte[] keyInBytes = Arrays.copyOfRange(key.getBytes(Charset.forName("UTF-8")), 0, 8);
+        byte [] keyInBytes = null;
+                
+        try {
+            // key naar bytes omzetten
+            keyInBytes = key.getBytes("UTF-8");
+            // maak een hash van de key
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            keyInBytes = md.digest(keyInBytes);
+            // neem eerste 8 bytes van hash
+            keyInBytes = Arrays.copyOfRange(keyInBytes, 0, 8);
+            
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return null;
+        }
+        
         return generate(keyInBytes);
     }
 
