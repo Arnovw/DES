@@ -51,7 +51,7 @@ public class DesEncryptionTest {
     public void testEncryptBlock() {
 
         byte[] key = ByteHelper.convertBinaryStringToByteArray("00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001".replace(" ", ""));
-        byte[][] subKeys = new KeyCalculator().generate(key);
+        byte[][] subKeys = new KeyCalculator().generateKeys(key);
 
         byte[] block = ByteHelper.convertBinaryStringToByteArray("00000001 00100011 01000101 01100111 10001001 10101011 11001101 11101111".replace(" ", ""));
         byte[] expectedEncryptedBlock = ByteHelper.convertBinaryStringToByteArray("10000101 11101000 00010011 01010100 00001111 00001010 10110100 00000101".replace(" ", ""));
@@ -76,7 +76,7 @@ public class DesEncryptionTest {
     public void testEncryptBlock2() {
 
         byte[] key = ByteHelper.convertBinaryStringToByteArray("1010011010111000011110011110100111011001100111111001100101110010".replace(" ", ""));
-        byte[][] subKeys = new KeyCalculator().generate(key);
+        byte[][] subKeys = new KeyCalculator().generateKeys(key);
 
         byte[] block = ByteHelper.convertBinaryStringToByteArray("0110100001100001011011000110110001101111011011110110111101101111".replace(" ", ""));
         byte[] expectedEncryptedBlock = ByteHelper.convertBinaryStringToByteArray("10001111 01101000 01001111 10101111 01010101 01011010 10111011 11011001".replace(" ", ""));
@@ -100,7 +100,7 @@ public class DesEncryptionTest {
     @Test
     public void testDecryptBlock() {
         byte[] key = ByteHelper.convertBinaryStringToByteArray("1010011010111000011110011110100111011001100111111001100101110010".replace(" ", ""));
-        byte[][] subKeys = new KeyCalculator().generate(key);
+        byte[][] subKeys = new KeyCalculator().generateKeys(key);
         byte[][] reversedSubKeys = reverseSubKeys(subKeys);
 
         byte[] encryptedBlock = ByteHelper.convertBinaryStringToByteArray("10001111 01101000 01001111 10101111 01010101 01011010 10111011 11011001".replace(" ", ""));

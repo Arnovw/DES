@@ -4,7 +4,9 @@ import helpers.ByteHelper;
 
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -39,28 +41,50 @@ public class KeyCalculator {
     public static int[] iteraties = new int[]{1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
 
+        
+    public static List<byte[][]> generateFor3DES(String key) {
+        
+        List<byte[][]> keys = new ArrayList<byte[][]>();
+        
+        keys.add(generate(key, true, 0));
+        keys.add(generate(key, true, 1));
+        keys.add(generate(key, true, 2));
+        
+        return keys;
+    }
+    
     public static byte[][] generate(String key) {
+        return generate(key, false, 0);
+    }
+    
+    public static byte[][] generate(String key, boolean for3DES, int offset) {
         byte [] keyInBytes = null;
-                
+        
+        if(for3DES) {
+            offset = offset * 8;
+        } else {
+            offset = 0;
+        }
+        
         try {
             // key naar bytes omzetten
             keyInBytes = key.getBytes("UTF-8");
             // maak een hash van de key
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             keyInBytes = md.digest(keyInBytes);
-            // neem eerste 8 bytes van hash
-            keyInBytes = Arrays.copyOfRange(keyInBytes, 0, 8);
+            // neem 8 bytes uit de hash
+            keyInBytes = Arrays.copyOfRange(keyInBytes, offset, offset + 8);
             
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             return null;
         }
         
-        return generate(keyInBytes);
+        return KeyCalculator.generateKeys(keyInBytes);
     }
 
     // maakt de keys aan
-    public static byte[][] generate(byte[] sourceCD) {
+    public static byte[][] generateKeys(byte[] sourceCD) {
 
         // Splitst de source array in twee tabellen (C, D)
         //byte[] permutatedBlock = ByteHelper.permutate(sourceCD, permutatieTabel1);

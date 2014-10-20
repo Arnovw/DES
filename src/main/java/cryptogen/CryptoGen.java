@@ -36,11 +36,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class CryptoGen extends JFrame implements ActionListener {
 
-    private JTextField txtDesFile, txtDesKey, txtStenagoImage, txtStenagoFile;
-    private JButton btnDesEncode, btnDesDecode, btnDesFile,
+    private JTextField txtDesDecryptedFile, txtDesEncryptedFile, txtDesKey, txtStenagoImage, txtStenagoFile;
+    private JButton btnDesEncode, btnDesDecode, btnDesFile, btnDesOutputFile,
             btnStenagoEncode, btnStenagoDecode, btnStenagoImage, btnStenagoFile;
     private JTextArea txtStenagoText, txtConsole;
-    private JCheckBox cbStenago;
+    private JCheckBox cbStenago, cbUse3des;
 
     public CryptoGen() {
         initGui();
@@ -67,33 +67,54 @@ public class CryptoGen extends JFrame implements ActionListener {
         //compontenten toevoegen aan DES paneel
         gbc.gridx = 0;
         gbc.gridy = 0;
-        pDes.add(new JLabel("File:"), gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        pDes.add(new JLabel("Key:"), gbc);
+        pDes.add(new JLabel("Decrypted File:"), gbc);
         gbc.gridx = 1;
         gbc.gridy = 0;
-        txtDesFile = new JTextField(10);
-        pDes.add(txtDesFile, gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        txtDesKey = new JTextField(10);
-        pDes.add(txtDesKey, gbc);
+        txtDesDecryptedFile = new JTextField(10);
+        pDes.add(txtDesDecryptedFile, gbc);
         gbc.gridx = 2;
         gbc.gridy = 0;
         btnDesFile = new JButton("Select File");
         btnDesFile.addActionListener(this);
         pDes.add(btnDesFile, gbc);
+        
+        
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        pDes.add(new JLabel("Encrypted File:"), gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        txtDesEncryptedFile = new JTextField(10);
+        pDes.add(txtDesEncryptedFile, gbc);
+        gbc.gridx = 2;
+        gbc.gridy = 1;
+        btnDesOutputFile = new JButton("Select File");
+        btnDesOutputFile.addActionListener(this);
+        pDes.add(btnDesOutputFile, gbc);
+        
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        pDes.add(new JLabel("Key:"), gbc);
         gbc.gridx = 1;
         gbc.gridy = 3;
-        btnDesDecode = new JButton("Start Decryption");
-        btnDesDecode.addActionListener(this);
-        pDes.add(btnDesDecode, gbc);
+        txtDesKey = new JTextField(10);
+        pDes.add(txtDesKey, gbc);
         gbc.gridx = 2;
         gbc.gridy = 3;
+        cbUse3des = new JCheckBox("Use 3DES");
+        pDes.add(cbUse3des, gbc);
+ 
+        
+        gbc.gridx = 1;
+        gbc.gridy = 4;
         btnDesEncode = new JButton("Start Encryption");
         btnDesEncode.addActionListener(this);
         pDes.add(btnDesEncode, gbc);
+        gbc.gridx = 2;
+        gbc.gridy = 4;
+        btnDesDecode = new JButton("Start Decryption");
+        btnDesDecode.addActionListener(this);
+        pDes.add(btnDesDecode, gbc);
 
         //des paneel toevoegen aan frame
         pMain.add(pDes, BorderLayout.WEST);
@@ -147,14 +168,14 @@ public class CryptoGen extends JFrame implements ActionListener {
         pStenago.add(cbStenago);
         gbc.gridx = 1;
         gbc.gridy = 4;
-        btnStenagoDecode = new JButton("Start Decryption");
-        btnStenagoDecode.addActionListener(this);
-        pStenago.add(btnStenagoDecode, gbc);
-        gbc.gridx = 2;
-        gbc.gridy = 4;
         btnStenagoEncode = new JButton("Start Encryption");
         btnStenagoEncode.addActionListener(this);
         pStenago.add(btnStenagoEncode, gbc);
+        gbc.gridx = 2;
+        gbc.gridy = 4;
+        btnStenagoDecode = new JButton("Start Decryption");
+        btnStenagoDecode.addActionListener(this);
+        pStenago.add(btnStenagoDecode, gbc);
 
         //stenago paneel toevoegen aan frame
         pMain.add(pStenago, BorderLayout.EAST);
@@ -185,7 +206,24 @@ public class CryptoGen extends JFrame implements ActionListener {
 
             //check of een file is geselecteerd
             if (fch.getSelectedFile() != null) {
-                txtDesFile.setText(fch.getSelectedFile().getAbsolutePath());
+                String filePath = fch.getSelectedFile().getAbsolutePath();
+                txtDesDecryptedFile.setText(filePath);
+                
+                if(txtDesEncryptedFile.getText().equals(""))
+                    txtDesEncryptedFile.setText(filePath + "." + "des");
+            }
+        } else if (e.getSource() == btnDesOutputFile) {
+            //create file choose window
+            JFileChooser fch = new JFileChooser();
+            fch.showSaveDialog(this);
+
+            //check of een file is geselecteerd
+            if (fch.getSelectedFile() != null) {
+                String filePath = fch.getSelectedFile().getAbsolutePath();
+                txtDesEncryptedFile.setText(filePath);
+                
+                if(txtDesDecryptedFile.getText().equals("") && filePath.indexOf(".des") != -1)
+                    txtDesDecryptedFile.setText(filePath.substring(0, filePath.indexOf(".des")));
             }
         } else if (e.getSource() == btnStenagoImage) {
             //create file choose window
@@ -239,17 +277,75 @@ public class CryptoGen extends JFrame implements ActionListener {
 
             txtConsole.append("Decoding finished!" + "\n\r");
         } else if (e.getSource() == btnDesEncode) {
-            txtConsole.append("Encrypting started!" + "\n\r");
+            
+            
+            String inputFile = txtDesDecryptedFile.getText();
+            String outputFile = txtDesEncryptedFile.getText();
+            String key = txtDesKey.getText();
+
+            if(key.equals("")) {
+                JOptionPane.showMessageDialog(null, "You must enter a key first.", "No key", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            if(inputFile.equals("")) {
+                JOptionPane.showMessageDialog(null, "You must choose a file first.", "No file", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            if(outputFile.equals("")) {
+                JOptionPane.showMessageDialog(null, "You must choose an output file location.", "No output file", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            txtConsole.append("Starting encryption process." + "\n\r");
             long before = System.currentTimeMillis();
-            DesEncryption.encryptFile(txtDesFile.getText(), txtDesKey.getText());
+            
+            if(cbUse3des.isSelected()) {
+                DesEncryption.encryptFile3DES(inputFile, outputFile, key);
+            } else {
+                DesEncryption.encryptFile(inputFile, outputFile, key);
+            }
+            
+            
             long after = System.currentTimeMillis();
-            txtConsole.append("Time encrypting in milliseconds " + (after - before) + "\n\r");
+            txtConsole.append("Encryption completed."+ "\n\r");
+            txtConsole.append("Duration: " + (after - before)/1000.0 + " seconds" + "\n\r");
+
+            
         } else if (e.getSource() == btnDesDecode) {
-            txtConsole.append("Decrypting started!" + "\n\r");
+            
+            String inputFile = txtDesEncryptedFile.getText();
+            String outputFile = txtDesDecryptedFile.getText();
+            String key = txtDesKey.getText();
+
+            if(key.equals("")) {
+                JOptionPane.showMessageDialog(null, "You must enter a key first.", "No key", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            if(inputFile.equals("")) {
+                JOptionPane.showMessageDialog(null, "You must choose a file first.", "No file", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            if(outputFile.equals("")) {
+                JOptionPane.showMessageDialog(null, "You must choose an output file location.", "No output file", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            
+            txtConsole.append("Starting decryption process." + "\n\r");
             long before = System.currentTimeMillis();
-            DesEncryption.decryptFile(txtDesFile.getText(), txtDesKey.getText());
+            
+            
+            if(cbUse3des.isSelected()) {
+                DesEncryption.decryptFile3DES(inputFile, outputFile, key);
+            } else {
+                DesEncryption.decryptFile(inputFile, outputFile, key);
+            }
+            
             long after = System.currentTimeMillis();
-            txtConsole.append("Time decrypting in milliseconds " + (after - before) + "\n\r");
+            txtConsole.append("Decryption completed."+ "\n\r");
+            txtConsole.append("Duration: " + (after - before)/1000.0 + " seconds" + "\n\r");
+            
         } else if (e.getSource() == btnStenagoFile) {
             //create file choose window
             JFileChooser fch = new JFileChooser();
