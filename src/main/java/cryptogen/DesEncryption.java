@@ -1,6 +1,7 @@
 package cryptogen;
 
 import helpers.ByteHelper;
+import helpers.ConsoleHelper;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class DesEncryption {
 
     private static final int blockSizeInBytes = 8;
 
+    
     private static final int[] initialPermutation = new int[] {
         58, 50, 42, 34, 26, 18, 10, 2,
         60, 52, 44, 36, 28, 20, 12, 4,
@@ -39,6 +41,7 @@ public class DesEncryption {
 
       public static void encryptFile3DES(String inputFilePath, String outputFilePath, String key) {
         List<byte[][]> subKeys = KeyCalculator.generateFor3DES(key);
+        
         String tempFile = outputFilePath + ".temp";
         encryptFileAsync(inputFilePath, outputFilePath, subKeys.get(2));
         decryptFileAsync(outputFilePath, tempFile, subKeys.get(1));
@@ -63,11 +66,11 @@ public class DesEncryption {
     
     public static void encryptFile(String inputFilePath, String outputFilePath, String key) {
         final byte[][] subKeys = KeyCalculator.generate(key);
-        
         encryptFileAsync(inputFilePath, outputFilePath, subKeys);
+        
     }
 
-    public static void decryptFile(String inputFilePath, String outputFilePath, String key) {
+    public static void decryptFile(String inputFilePath, String outputFilePath, String key) { 
         byte[][] subKeys = KeyCalculator.generate(key);
         decryptFileAsync(inputFilePath, outputFilePath, subKeys);
     }

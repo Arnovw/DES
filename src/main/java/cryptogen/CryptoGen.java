@@ -1,4 +1,4 @@
-/*
+    /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -6,6 +6,7 @@
 package cryptogen;
 
 import cryptogen.stenagography.Stenagography;
+import helpers.ConsoleHelper;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
@@ -49,7 +50,7 @@ public class CryptoGen extends JFrame implements ActionListener {
     public void initGui() {
         //configureren JFrame
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setTitle("DES Program");
+        this.setTitle("Crypto Generator");
 
         //hoofdpaneel aanmaken
         JPanel pMain = new JPanel(new BorderLayout());
@@ -187,6 +188,11 @@ public class CryptoGen extends JFrame implements ActionListener {
         txtConsole = new JTextArea(20, 20);
         JScrollPane scrollPane = new JScrollPane(txtConsole);
         pMain.add(scrollPane, BorderLayout.SOUTH);
+        
+        // add console textarea to helper class
+        ConsoleHelper.console = this.txtConsole;
+        
+         
     }
 
     public static void main(String[] args) {
@@ -297,19 +303,17 @@ public class CryptoGen extends JFrame implements ActionListener {
                 return;
             }
 
-            txtConsole.append("Starting encryption process." + "\n\r");
-            long before = System.currentTimeMillis();
+            
             
             if(cbUse3des.isSelected()) {
+                ConsoleHelper.start("3des encryption");
                 DesEncryption.encryptFile3DES(inputFile, outputFile, key);
+                ConsoleHelper.finish("3des encryption");
             } else {
+                ConsoleHelper.start("encryption");
                 DesEncryption.encryptFile(inputFile, outputFile, key);
+                ConsoleHelper.finish("encryption");
             }
-            
-            
-            long after = System.currentTimeMillis();
-            txtConsole.append("Encryption completed."+ "\n\r");
-            txtConsole.append("Duration: " + (after - before)/1000.0 + " seconds" + "\n\r");
 
             
         } else if (e.getSource() == btnDesDecode) {
@@ -332,19 +336,15 @@ public class CryptoGen extends JFrame implements ActionListener {
                 return;
             }
             
-            txtConsole.append("Starting decryption process." + "\n\r");
-            long before = System.currentTimeMillis();
-            
-            
             if(cbUse3des.isSelected()) {
+                ConsoleHelper.start("3des decryption");
                 DesEncryption.decryptFile3DES(inputFile, outputFile, key);
+                ConsoleHelper.finish("3des decryption");
             } else {
+                ConsoleHelper.start("decryption");
                 DesEncryption.decryptFile(inputFile, outputFile, key);
+                ConsoleHelper.finish("decryption");
             }
-            
-            long after = System.currentTimeMillis();
-            txtConsole.append("Decryption completed."+ "\n\r");
-            txtConsole.append("Duration: " + (after - before)/1000.0 + " seconds" + "\n\r");
             
         } else if (e.getSource() == btnStenagoFile) {
             //create file choose window
