@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package cryptogen.stenagography;
+package cryptogen.steganography;
 
+import helpers.ConsoleHelper;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -28,9 +29,8 @@ import javax.swing.JTextArea;
  *
  * @author Cornel
  */
-public class Stenagography {
-
-    public static JTextArea console;
+public class Steganography {
+    
     public static boolean DEBUG = false;
 
     /*
@@ -40,106 +40,76 @@ public class Stenagography {
     
      gebaseerd op http://www.dreamincode.net/forums/topic/27950-steganography/
      */
-    public static BufferedImage encode(String path, String msg, boolean file) {
+    public static BufferedImage encode(String inputImagePath, String inputFilePath) {
 
         //foto ophalen van disk
-        BufferedImage selectedImage = getImage(path);
+        BufferedImage selectedImage = getImage(inputImagePath);
 
         //kopie maken van geselecteerde foto zodat de foto aangepast kan worden in Java (userspace)
         BufferedImage img = cloneImage(selectedImage);
-        if (file) {
-            img = encodeMessage(img, msg, file);
-        } else {
-            img = encodeMessage(img, msg, file);
-        }
-
-        console.append("Encoding has been completed!" + "\n\r");
-
-        return (img);
+        
+        return encodeMessage(img, inputFilePath);
     }
 
-    public static BufferedImage encodeMessage(BufferedImage img, String msg, boolean file) {
+    public static BufferedImage encodeMessage(BufferedImage img, String inputFilePath) {
         //foto omzetten naar een byte array
         byte bImg[] = getBytes(img);
-        //Controle of er gelezen wordt van een DES file
-        if (file) {
-            // byte gegevensopslaan en uitlezen
-            byte[] block = null;
-            int bLen = 0;
-            try {
-                final File inputFile = new File(msg);
-                final InputStream inputStream = new BufferedInputStream(new FileInputStream(inputFile));
+        // byte gegevensopslaan en uitlezen
+        byte[] block = null;
+        int bLen = 0;
+        
+        try {
+            final File inputFile = new File(inputFilePath);
+            final InputStream inputStream = new BufferedInputStream(new FileInputStream(inputFile));
 
-                final long nbBytesFile = inputFile.length();
+            final long nbBytesFile = inputFile.length();
 
-                if (nbBytesFile > (long) Integer.MAX_VALUE) {
-                    throw new Exception("File to big.");
-                } else {
-                    bLen = (int) nbBytesFile;
-                    block = new byte[bLen];
-                }
-                inputStream.read(block);
-                System.out.println("Reading file with: " + nbBytesFile + " bytes");
-
-                inputStream.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (nbBytesFile > (long) Integer.MAX_VALUE) {
+                throw new Exception("File to big.");
+            } else {
+                bLen = (int) nbBytesFile;
+                block = new byte[bLen];
             }
 
+            inputStream.read(block);
+            ConsoleHelper.append("Encoding file with: " + nbBytesFile + " bytes");
+
+            inputStream.close();
+            
+            ConsoleHelper.append("Encoding header");
             addText(bImg, getBytes(bLen), 0);
+            ConsoleHelper.append("Encoding file");
             addText(bImg, block, 32);
-        } else {
-            //tekst omzetten naar een byte array
-            byte bMsg[] = msg.getBytes();
-
-            //byte array maken van de lengte van de tekst
-            byte bLen[] = getBytes(bMsg.length);
-
-            //lengte van de tekst in de eerste 32 bits van de foto zetten
-            addText(bImg, bLen, 0);
-
-            //tekst in de foto zetten
-            addText(bImg, bMsg, 32); //32 offset voor de lengte
+        
+        } catch (Exception ex) {
+            ConsoleHelper.appendError(ex.getMessage());
         }
-        //compare(getBytes(selectedImage), bImg, bMsg.length * 8 + 32);
-        //byte array omzetten naar foto
-        //img =  getImage(bImg);
+        
         return img;
     }
 
-    public static String decode(String path, boolean file) {
+    public static void decode(String inputImagePath, String outputFilePath) {
         //foto ophalen van disk
-        BufferedImage selectedImage = getImage(path);
+        BufferedImage selectedImage = getImage(inputImagePath);
 
         //kopie maken van geselecteerde foto zodat de foto aangepast kan worden in Java (userspace)
         BufferedImage img = cloneImage(selectedImage);
 
         //retrieve message from image
-        String msg = decodetext(img);
+        String decodedFile = decodeImage(img);
         
-        //Scrijft message naar een file EN output box
-        if (file) {
-            try {
-                final File outputFile = new File(path + ".des2");
-                final OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
-                outputStream.write(msg.getBytes());
-                outputStream.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        try {
+            //Scrijft message naar een file
+            final File outputFile = new File(outputFilePath);
+            final OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
+            outputStream.write(decodedFile.getBytes());
+            outputStream.close();
+        } catch (Exception ex) {
+            ConsoleHelper.appendError(ex.getMessage());
         }
-        return msg;
     }
 
-    public static String decodetext(BufferedImage img) {
+    public static String decodeImage(BufferedImage img) {
         //convert image to byte array
         byte[] bImg = getBytes(img);
 
@@ -192,9 +162,7 @@ public class Stenagography {
             //converteer the bestand naar een foto
             img = ImageIO.read(f);
         } catch (Exception ex) {
-            if (console != null) {
-                console.append("Fatal Error (getImage(String)): " + ex.getMessage() + "\n\r");
-            }
+            ConsoleHelper.appendError(ex.getMessage());
         }
         return img;
     }
@@ -319,9 +287,10 @@ public class Stenagography {
 
             //loop door alle bytes van de meegegeven waarde (val)
             for (int i = 0; i < bVal.length; i++) {
-                if (DEBUG) {
-                    console.append("Encoding of byte " + i + " started. \n\r");
-                }
+                
+                if(i% 100 == 0 && i != 0)
+                    ConsoleHelper.appendPercentCompleted(i, bVal.length);
+                
 
                 //loop door de 8 bits vat de i byte
                 for (int bit = 7; bit >= 0; --bit, ++offset) { //increment offset na elke iteratie
@@ -332,15 +301,16 @@ public class Stenagography {
                     bImg[offset] = (byte) ((bImg[offset] & 0xFE) | b);
 
                     if (DEBUG) {
-                        console.append("\t" + "value byte " + i + ", " + "bit " + bit + ": Encoded into image byte " + offset + " with value " + b + "\n\r");
+                        ConsoleHelper.append("\t" + "value byte " + i + ", " + "bit " + bit + ": Encoded into image byte " + offset + " with value " + b + "\n\r");
                     }
 
                 }
             }
+            
+            ConsoleHelper.appendPercentCompleted(bVal.length, bVal.length);
+            
         } catch (Exception ex) {
-            if (console != null) {
-                console.append("Fatal Error addText(byte[], byte[], int): " + ex.getMessage() + "\n\r");
-            }
+            throw ex;
         }
 
         return bImg;
@@ -358,12 +328,11 @@ public class Stenagography {
 
             return buffer.getData();
         } catch (Exception ex) {
-            if (console != null) {
-                console.append("Fatal Error (getBytes(BufferedImage)): " + ex.getMessage() + "\n\r");
-            }
+            throw ex;
         }
+//        return bImg;
+        
 
-        return bImg;
     }
 
     /*
@@ -417,29 +386,20 @@ public class Stenagography {
      Een foto byte array omzetten naar een foto
      */
     public static BufferedImage getImage(byte[] arr) {
-        /*for (int i = 0; i < arr.length; i++) {
-         System.out.println(Integer.toBinaryString(arr[i]));
-         }*/
-        //System.out.println(getType(arr));
+        
         BufferedImage img = null;
 
-        /*String[] names = ImageIO.getWriterFormatNames();
-         for (String name : names) {
-         System.out.println(name);
-         }*/
         try {
             InputStream in = new ByteArrayInputStream(arr);
             img = ImageIO.read(in);
         } catch (Exception ex) {
-            if (console != null) {
-                console.append("Fatal Error (getImage(byte[])): " + ex.getMessage() + "\n\r");
-            }
+            throw ex;
+        } finally {
+            if (img == null) 
+                throw new IllegalArgumentException("Can not convert byte array to image!");
+            
+            return img;
         }
-        if (img == null) {
-            throw new IllegalArgumentException("Can not convert byte array to image!");
-        }
-
-        return img;
     }
 
     //comparing 2 byte arrays for debugging

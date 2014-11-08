@@ -18,12 +18,11 @@ import javax.swing.text.DefaultHighlighter;
  */
 public class ConsoleHelper {
     public static JTextArea console;
-    public static final String NEWLINE = "\n\r";
-    public static final String SEPERATOR = "-----------------------------------------------------";
-    public static final Color GREEN = new Color(0xb6ff51);
-    
-    public static long before;
-    public static long after;
+    private static final String NEWLINE = "\n\r";
+    private static final String SEPERATOR = "-----------------------------------------------------";
+    private static final Color GREEN = new Color(0xb6ff51);
+    private static final Color RED = new Color(0xed6565);
+    private static long before, after;
     
     
     public static void start(String message) {
@@ -36,6 +35,27 @@ public class ConsoleHelper {
         console.append(message + NEWLINE);
     }
     
+    public static void appendError(String message) {
+        try {
+            console.append(message + NEWLINE);
+            
+            int pos = console.getText().lastIndexOf(message);
+            console.getHighlighter().addHighlight(pos,
+                    pos + message.length(),
+                    new DefaultHighlighter.DefaultHighlightPainter(RED));
+            
+            scrollToBottom();
+            
+        } catch (BadLocationException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+    
+    public static void appendPercentCompleted(int current, int total) {
+        int temp = (int) ((current/(float)total) * 1000);
+        ConsoleHelper.append(temp/10.0 + "% completed");
+    }
+    
     public static void finish(String message) {       
         
         try {
@@ -44,16 +64,20 @@ public class ConsoleHelper {
             String output = "Completed " + message + NEWLINE;
             console.append(output);
             console.append("Operation took: " + (after - before)/1000.0 + " seconds." + NEWLINE);
-//            console.append(SEPERATOR + NEWLINE);
             
             int pos = console.getText().lastIndexOf(output);
             console.getHighlighter().addHighlight(pos,
                     pos + output.length(),
                     new DefaultHighlighter.DefaultHighlightPainter(GREEN));
             
+            scrollToBottom();
         } catch (BadLocationException ex) {
             System.out.println(ex.getMessage());
         }
         
+    }
+    
+    private static void scrollToBottom() {
+        console.setCaretPosition(console.getDocument().getLength());
     }
 }
