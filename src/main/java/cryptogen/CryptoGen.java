@@ -345,7 +345,7 @@ public class CryptoGen extends JFrame implements ActionListener {
                 ConsoleHelper.finish("3des encryption");
             } else {
                 ConsoleHelper.start("des encryption");
-                DesEncryption.encryptFile(inputFile, outputFile, key, false);
+                DesEncryption.encryptFile(inputFile, outputFile, key);
                 ConsoleHelper.finish("des encryption");
             }
 
@@ -376,7 +376,7 @@ public class CryptoGen extends JFrame implements ActionListener {
                 ConsoleHelper.finish("3des decryption");
             } else {
                 ConsoleHelper.start("des decryption");
-                DesEncryption.decryptFile(inputFile, outputFile, key, false);
+                DesEncryption.decryptFile(inputFile, outputFile, key);
                 ConsoleHelper.finish("des decryption");
             }
             
