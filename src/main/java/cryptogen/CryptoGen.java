@@ -30,7 +30,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
- * @author cornel
+ * @author cornel, Nick
  */
 public class CryptoGen extends JFrame implements ActionListener {
 
