@@ -91,20 +91,20 @@ public class Steganography {
         BufferedImage img = cloneImage(selectedImage);
 
         //retrieve message from image
-        String decodedFile = decodeImage(img);
+        byte[] decodedFile = decodeImage(img);
         
         try {
             //Scrijft message naar een file
             final File outputFile = new File(outputFilePath);
             final OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
-            outputStream.write(decodedFile.getBytes());
+            outputStream.write(decodedFile);
             outputStream.close();
         } catch (Exception ex) {
             ConsoleHelper.appendError(ex.getMessage());
         }
     }
 
-    public static String decodeImage(BufferedImage img) {
+    public static byte[] decodeImage(BufferedImage img) {
         //convert image to byte array
         byte[] bImg = getBytes(img);
 
@@ -135,7 +135,7 @@ public class Steganography {
 
         //elke byte van de tekst loopen om de laatste bits  op de halen van de tekst
         for (int i = 0; i < bMsg.length; i++) {
-            //8 keer de laatste bit ophalen van de byte van de foto om zo de tekst byte o pte bouwen
+            //8 keer de laatste bit ophalen van de byte van de foto om zo de tekst byte op te bouwen
             for (int bit = 0; bit < 8; ++bit, ++offset) {
                 //zelfde principe als de lengte
                 bMsg[i] = (byte) ((bMsg[i] << 1) | (bImg[offset] & 1));
@@ -147,7 +147,7 @@ public class Steganography {
         }
 
         //converteer message byte array naar string
-        return new String(bMsg);
+        return bMsg;
     }
 
     /*
@@ -305,8 +305,8 @@ public class Steganography {
                 }
                 
                 if (DEBUG) {
-                ConsoleHelper.append("\t" + "value byte " + i + ": " + Integer.toBinaryString(bVal[i]) + " " + bVal[i]);
-            }
+                    ConsoleHelper.append("\t" + "value byte " + i + ": " + Integer.toBinaryString(bVal[i]));
+                }
             }
             
             ConsoleHelper.appendPercentCompleted(bVal.length, bVal.length);
