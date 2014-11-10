@@ -15,15 +15,10 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import javax.imageio.ImageIO;
-import javax.swing.JTextArea;
 
 /**
  *
@@ -31,7 +26,7 @@ import javax.swing.JTextArea;
  */
 public class Steganography {
     
-    public static boolean DEBUG = false;
+    public static boolean DEBUG = true;
 
     /*
      *Encrypt an image with text, the output file will be of type .png
@@ -120,7 +115,7 @@ public class Steganography {
         int length = 0;
 
         for (int i = 0; i < offset; i++) {
-            //de lengte byte doorschuiven naar links en de laatste but van de image byte op de ereste plaats zetten dmv OR
+            //de lengte byte doorschuiven naar links en de laatste bit van de image byte op de eerste plaats zetten dmv OR
             //
             //0000 0000 0000 0000 0000 0000 0000 0000
             //0000 0000 0000 0000 0000 0000 0000 0000 = doorschuiven naar links
@@ -144,6 +139,10 @@ public class Steganography {
             for (int bit = 0; bit < 8; ++bit, ++offset) {
                 //zelfde principe als de lengte
                 bMsg[i] = (byte) ((bMsg[i] << 1) | (bImg[offset] & 1));
+            }
+            
+            if (DEBUG) {
+                ConsoleHelper.append("\t" + "value byte " + i + ": " + Integer.toBinaryString(bMsg[i]));
             }
         }
 
@@ -281,7 +280,7 @@ public class Steganography {
     public static byte[] addText(byte[] bImg, byte[] bVal, int offset) {
         try {
             //check of de tekst niet te groot is voor de foto
-            if (bVal.length + offset > bImg.length) {
+            if (bVal.length * 8 > bImg.length - offset) {
                 throw new IllegalArgumentException("Message is too big for this image!");
             }
 
@@ -300,11 +299,14 @@ public class Steganography {
                     //bit in de afbeelding veranderen
                     bImg[offset] = (byte) ((bImg[offset] & 0xFE) | b);
 
-                    if (DEBUG) {
+                    /*if (DEBUG) {
                         ConsoleHelper.append("\t" + "value byte " + i + ", " + "bit " + bit + ": Encoded into image byte " + offset + " with value " + b + "\n\r");
-                    }
-
+                    }*/
                 }
+                
+                if (DEBUG) {
+                ConsoleHelper.append("\t" + "value byte " + i + ": " + Integer.toBinaryString(bVal[i]) + " " + bVal[i]);
+            }
             }
             
             ConsoleHelper.appendPercentCompleted(bVal.length, bVal.length);

@@ -8,7 +8,6 @@ package cryptogen;
 import cryptogen.steganography.Steganography;
 import helpers.ConsoleHelper;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -23,12 +22,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
@@ -212,9 +209,7 @@ public class CryptoGen extends JFrame implements ActionListener {
             if (fch.getSelectedFile() != null) {
                 String filePath = fch.getSelectedFile().getAbsolutePath();
                 txtDesDecryptedFile.setText(filePath);
-                
-                if(txtDesEncryptedFile.getText().equals(""))
-                    txtDesEncryptedFile.setText(filePath + "." + "des");
+                txtDesEncryptedFile.setText(filePath + "." + "des");
             }
         } else if (e.getSource() == btnDesOutputFile) {
             //create file choose window
@@ -243,11 +238,9 @@ public class CryptoGen extends JFrame implements ActionListener {
                 txtStenagoImage.setText(path);
                 
                 //autocomplete output path
-                if(txtStenagoOutputImage.getText().equals("")) {
-                    int dotPos = path.lastIndexOf(".");
-                    String outputPath = path.substring(0, dotPos) + ".encoded" + path.substring(dotPos);
-                    txtStenagoOutputImage.setText(outputPath);
-                }
+                int dotPos = path.lastIndexOf(".");
+                String outputPath = path.substring(0, dotPos) + ".encoded" + path.substring(dotPos);
+                txtStenagoOutputImage.setText(outputPath);
             }
         } else if (e.getSource() == btnStenagoOutputImage) {
             //create file choose window
